@@ -1,0 +1,12 @@
+#!/bin/bash
+
+TMP_FOLDER=/tmp/cntools/
+PACKAGE=tools.tar.gz
+SCRIPTS_URL=http://www.winlab.rutgers.edu/comnet2/Projects/downloads/$PACKAGE
+
+mkdir -p $TMP_FOLDER
+cd $TMP_FOLDER
+wget $SCRIPTS_URL
+tar xvf $PACKAGE
+cp tools/* /usr/local/bin/
+rm -r $TMP_FOLDER

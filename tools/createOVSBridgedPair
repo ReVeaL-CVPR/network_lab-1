@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e
+
+usage()
+{
+        echo "USAGE: createOVSBridgedPair.sh portName1 portName2 y|n bridgeName"
+        exit $E_BADARGS
+}
+
+if [ $# -lt 4 ]
+then
+        usage
+fi
+
+port1=$1
+port2=$2
+addb=$3
+
+# create the switch
+BRIDGE=$4
+
+
+if [ "$3" == "y" ]
+then
+	echo "Adding bridge $BRIDGE"
+	ovs-vsctl add-br $BRIDGE
+fi
+
+#### PORT 1
+# create an internal ovs port
+ovs-vsctl add-port $BRIDGE $port1 -- set Interface $port1 type=internal
+# attach it to namespace
+ip link set dev $port1 up
+#
+#### PORT 2
+# create an internal ovs port
+ovs-vsctl add-port $BRIDGE $port2 -- set Interface $port2 type=internal
+# set the ports to up
+ip link set dev $port2 up

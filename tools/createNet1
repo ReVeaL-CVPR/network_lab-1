@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo "Clean any previous network"
+cleanNet ovs-bridge
+
+echo "Create new network"
+createOVSBridgedPair veth1 veth2 y ovs-bridge
+
+ifconfig veth1 192.168.1.1
+ifconfig veth2 192.168.1.2

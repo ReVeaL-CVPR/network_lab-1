@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+usage()
+{
+        echo "USAGE: cleanNet.sh bridge-name"
+        exit $E_BADARGS
+}
+
+if [ $# -lt 1 ]
+then
+        usage
+fi
+
+BRIDGE=$1
+
+ovs-vsctl del-br $BRIDGE

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#  Topoplogy
+#
+#
+#   Client [veth1]  -----  [veth2] Router [veth3] ----- [veth4] Client
+#
+#
+#
+
+
+echo "Clean any previous network"
+cleanNet ovs-bridge
+
+echo "Create new network"
+createOVSBridgedPair veth1 veth2 y ovs-bridge
+createOVSBridgedPair veth3 veth4 n ovs-bridge
