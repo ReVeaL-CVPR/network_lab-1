@@ -1,4 +1,3 @@
-
 #include <click/element.hh>
 #include <click/etheraddress.hh>
 #include <click/ipaddress.hh>
@@ -26,13 +25,19 @@ public:
 	}
 
 	int configure(Vector<String> &, ErrorHandler *);
-	
+	void detect(Timer*);
+	//Detect adjacent routers periodically
+
 	void push(int, Packet *);
-	Packet *pull(int);
-	Packet *simple_action(Packet *);
 
 private:
 	Graph *graph;
+	Timer _timer_period;
+	Timer _timer_delay;
+	uint32_t _ip_address;
+	uint32_t _time_out;
+	uint32_t _delay;
+	Vector<String> answers;
 };
 
 CLICK_ENDDECLS
