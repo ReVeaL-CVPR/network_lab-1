@@ -177,10 +177,44 @@ try_add_edge(uint32_t ea1, uint32_t ea2, uint32_t seq){
 		edge[n2].push_back(it);
 	}
 	
-	solve();
+	return 1;
+}
+
+int Graph ::
+try_add_edge(uint32_t ea1, uint32_t ea2){
+	uint32_t n1 = table_lookup(ea1);
+	if ((int)n1 < 0) n1 = add_node(ea1);
+	if ((int)n1 < 0)
+		return -E_NODE_LIMIT_EXCEEDED;
+	
+	uint32_t n2 = table_lookup(ea2);
+	if ((int)n2 < 0) n2 = add_node(ea2);
+	if ((int)n2 < 0)
+		return -E_NODE_LIMIT_EXCEEDED;
+	
+	bool exist = 0;
+	
+	List<Edge> :: iterator it;
+	List<List<Edge> :: iterator> :: iterator it1;
+	for (it1 = edge[n1].begin(); it1 != edge[n1].end(); ++it1)
+	 if ((*it1) -> u == n2 || (*it1) -> v == n2){
+		exist = 1;
+		break;
+	 }
+	 
+	if (exist){
+		it = *it1;
+		it -> valid = 1;
+		++it -> seq;
+	} else {
+		it = edges.push_back(Edge(n1, n2, seq));
+		edge[n1].push_back(it);
+		edge[n2].push_back(it);
+	}
 	
 	return 1;
 }
+
 
 int Graph ::
 try_delete_edge(uint32_t ea1, uint32_t ea2){
@@ -204,10 +238,54 @@ try_delete_edge(uint32_t ea1, uint32_t ea2){
 	if (!exist)
 		return -E_EDGE_NOT_EXIST;
 	
-	solve();
-	
 	return 1;
 }
+
+int Graph ::
+check_edge(Edge_transfer *et){
+	uint32_t u = table_lookup(et -> src);
+	if ((int)u < 0) u = add_node(et -> src);
+	if ((int)u < 0)
+		return -E_NODE_LIMIT_EXCEEDED;
+	
+	uint32_t v = table_lookup(et -> dst);
+	if ((int)v < 0) v = add_node(et -> dst);
+	if ((int)v < 0)
+		return -E_NODE_LIMIT_EXCEEDED;
+	
+	int r = 
+	
+	List<Edge> :: iterator it;
+	List<List<Edge> :: iterator> :: iterator it1;
+/*
+	for (it = edges.begin(); it != edges.end(); ++it)
+	 if ((it -> u == u && it -> v == v) || (it -> u == v && it -> v == u)){
+		 if (it -> seq > et -> seq) break;
+		 if (it -> valid == et -> valid) break;
+		 
+		
+	 }
+*/
+	for (it1 = edge[u].begin(); it1 != edge[u].end(); ++it1)
+	 if ((*it1) -> v == v || (*it1) -> u == v){
+		 it = *it1;
+		 if (it -> seq > et -> seq) break;
+		 if (it -> valid == et -> valid) break;
+		 r = 1;
+		 it -> seq = et -> seq;
+		 it -> valid = et -> valid;
+		 break;
+	 }
+	
+	if (it1 == edge[u].end()){
+		r = 1;
+		it = edges.push_back(Edge(u, v, et -> seq, et -> valid));
+		edge[u].push_back(it);
+		edge[v].push_back(it);
+	}
+	
+	return r;
+}	
 
 uint32_t Graph ::
 get_next_hop(uint32_t ea){
@@ -216,6 +294,23 @@ get_next_hop(uint32_t ea){
 		return -E_NODE_NOT_EXIST;
 	n0 = nexthop[n0];
 	return table_rev_lookup(n0);
+}
+
+Pair<char *, int> Graph ::
+toPayload(){
+	int s = edges.size() * sizeof(Edge_transfer);
+	char *r = new char[s];
+	Edge_transfer *ir = (Edge_transfer *)r;
+	
+	List<Edge> :: iterator it;
+	for (it = edges.begin(); it != edges.end(); ++it, ++ir){
+		ir -> src = table_rev_lookup(it -> u);
+		ir -> dst = table_rev_lookup(it -> v);
+		ir -> seq = it -> seq;
+		ir -> valid = it -> valid;
+	}
+	
+	return Pair<char *, int>(r, s);
 }
 
 void Graph ::

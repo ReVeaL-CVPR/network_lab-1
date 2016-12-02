@@ -25,6 +25,8 @@ public:
 	}
 
 	int configure(Vector<String> &, ErrorHandler *);
+	void broadcast(WritablePacket *);
+	void forward(int, Packet *);
 	void detect(Timer*);
 	//Detect adjacent routers periodically
 
@@ -38,6 +40,9 @@ private:
 	uint32_t _time_out;
 	uint32_t _delay;
 	Vector<String> answers;
+	
+	HashTable<uint32_t, int> port_table;
+	Vector<uint32_t> neighbor;
 };
 
 CLICK_ENDDECLS

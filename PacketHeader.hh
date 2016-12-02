@@ -16,16 +16,18 @@ struct PacketHeader{
 };
 
 public static void wrapper
-(char* payload, int type=0, int sequence, int source, int destination){
-    WritablePacket *packet = Packet::make(0,0,sizeof(struct PacketHeader) + struct PacketHeader *format = (struct PacketHeader*) packet->data();
+(char* payload, int type, int sequence, int source, int destination, int size){
+    WritablePacket *packet = Packet::make(0,0,sizeof(struct PacketHeader) + size);
     memset(packet->data(),0,packet->length());
     struct PacketHeader *format = (struct PacketHeader*) packet->data();
     format->type = type;
     format->sequence = sequence;
     format->source = source;
     format->destination = destination;
-    format->size = packet->length();
+    format->size = size;
     char *data = (char*)(packet->data()+sizeof(struct PacketHeader));
-    strcpy(data, payload);
+//    strcpy(data, payload);
+	memcpy(data, payload, size * sizeof(char));
+    
     return packet;
 }

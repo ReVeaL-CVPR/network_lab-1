@@ -6,7 +6,7 @@ public:
 	uint32_t seq;
 	bool valid;
 	
-	Edge(uint32_t _u, uint32_t _v, uint32_t _seq): u(_u), v(_v), seq(_seq), valid(true){
+	Edge(uint32_t _u, uint32_t _v, uint32_t _seq, bool _valid = 1): u(_u), v(_v), seq(_seq), valid(_valid){
 	}
 private:
 	Edge();
@@ -14,17 +14,28 @@ private:
 	Edge &operator =(const Edge &);
 };
 
+struct Edge_transfer{
+	uint32_t src, dst;
+	uint32_t seq;
+	bool valid;
+};
+
 
 class Graph;
 
 class Graph{
 public:
-	Graph(EtherAddress);
+	Graph(uint32_t);
 	~Graph();
 	
-	int try_add_edge(EtherAddress, EtherAddress);
-	int try_delete_edge(EtherAddress, EtherAddress);
-	EtherAddress nexthop(EtherAddress);
+	int try_add_edge(uint32_t, uint32_t);
+	int try_add_edge(uint32_t, uint32_t, uint32_t);
+	int try_delete_edge(uint32_t, uint32_t);
+	int check_edge(Edge_transfer *);
+	uint32_t nexthop(uint32_t) const;
+	void solve();
+	
+	Pair<char *, int> toPayload() const;
 	
 	enum {
 		E_NODE_NOT_EXIST = 1;
@@ -47,16 +58,18 @@ private:
 	
 	uint32_t dis[MaxNodeNum];
 	uint32_t nexthop[MaxNodeNum];
-	HashTable<EtherAddress, uint32_t> table;
+	HashTable<uint32_t, uint32_t> table;
 	
 	Graph();
+	Graph(const Graph &);
+	Graph &operator =(const Graph &);
 	
-	int add_node(EtherAddress);
+	int add_node(uint32_t);
 //	int delete_node(uint32_t);
 	
-	void table_add(EtherAddress, uint32_t);
+	void table_add(uint32_t, uint32_t);
 //	void table_delete(uint32_t);
-	
-	void solve();
+	uint32_t table_lookup(uint32_t) const;
+	uint32_t table_rev_lookup(uint32_t) const;
 };
 
