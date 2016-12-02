@@ -42,6 +42,7 @@ void GraphBuilder::detect(Timer* timer){
 		for(it = answers.begin(); it != answers.end(); ++it){
 			//TODO construct the new neighbor info
 		}
+
 		if(//TODO if neighbor info differ from the current table
 			){
 			//TODO update
@@ -60,9 +61,14 @@ void push(int srcprt, Packet *p){
 		answers.add(from);
 	} 
 	else if(header->type == UPDATE) {
+/*
 		//TODO check if the update information is new
 		if (isnew){
 			//TODO update
+			broadcast(p);
+		}
+*/
+		if ((graph -> try_add_edge(header -> source, header -> destination, header -> sequence) > 0){
 			broadcast(p);
 		}
 	} 
