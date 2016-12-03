@@ -292,9 +292,9 @@ uint32_t Graph ::
 get_next_hop(uint32_t ea) const{
 	uint32_t n0 = table_lookup(ea);
 	if ((int)n0 < 0)
-		return -E_NODE_NOT_EXIST;
+		return 0;
 	if (dis[n0] == ~0u >> 1)
-		return -E_NODE_CANNOT_REACH;
+		return 0;
 	n0 = nexthop[n0];
 	return table_rev_lookup(n0);
 }

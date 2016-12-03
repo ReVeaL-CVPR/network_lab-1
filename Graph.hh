@@ -27,7 +27,6 @@ public:
 	}
 private:
 	Edge();
-
 };
 
 struct Edge_transfer{

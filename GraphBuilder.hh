@@ -40,7 +40,14 @@ private:
 	uint32_t _time_out;
 	uint32_t _delay;
 	Vector<uint32_t> answers;
+	Vector<int> ans_port;
 	Vector<uint32_t> neighbor;
+	
+	Vector<uint32_t> port_table;
+	
+	int table_lookup(uint32_t) const;
+	void table_add(uint32_t, int);
+	void table_delete(uint32_t);
 };
 CLICK_ENDDECLS
 

@@ -82,6 +82,7 @@ void GraphBuilder::run_timer(Timer* timer){
 		click_chatter("Sending hello");
 //		answers = new Vector<uint32_t>();
 		answers.clear();
+		ans_port.clear();
 		WritablePacket *packet = _wrapper("hello", HELLO, 0, _ip_address, 0, 6);
 		broadcast(packet);
 		_timer_delay.schedule_after_sec(_delay);
@@ -93,6 +94,11 @@ void GraphBuilder::run_timer(Timer* timer){
 		bool isnew = 0;
 		Vector<uint32_t> :: iterator it;
 		Vector<uint32_t> :: iterator jt;
+		Vector<int> :: iterator kt;
+		port_table.clear();
+		for (it = answers.begin(), kt = ans_port.begin(); it != answers.end(); ++it, ++kt){
+			port_table[*kt] = *it;
+		}
 		for(it = answers.begin(); it != answers.end(); ++it){
 			bool f = 0;
 			for (jt = neighbor.begin(); jt != neighbor.end(); ++jt){
@@ -138,15 +144,28 @@ void GraphBuilder::run_timer(Timer* timer){
 void GraphBuilder :: push(int srcprt, Packet *p){
 	assert(p);
 	struct PacketHeader *header = (struct PacketHeader *)p->data();
-	if (header->type == HELLO){
+	if (header->type == DATA){
+		uint32_t dstip = graph -> get_next_hop(header -> destnation);
+		if (dstip != 0){
+			int dstprt = table_lookup(dstip);
+			if (dstprt >= 0)
+				output(dstprt).push(p);
+			else
+				p -> kill();
+		} else
+			p -> kill;
+	}
+	else if (header->type == HELLO){
 		click_chatter("HELLO received.\n");
 		WritablePacket *packet = _wrapper("", ACK, 0, _ip_address, header->source, 1);
+		p -> kill();
 		output(srcprt).push(packet);
 	} 
 	else if(header->type == ACK) {
 		uint32_t from = header->source;
 		click_chatter("ACK received. %u source\n", from);
 		answers.push_back(from);
+		ans_port.push_back(srcprt);
 		click_chatter("roger.\n");
 		p -> kill();
 	} 
@@ -172,6 +191,44 @@ void GraphBuilder :: push(int srcprt, Packet *p){
 		p->kill();
 	}
 }
+
+int GraphBuilder ::
+table_lookup(uint32_t ea) const{
+	Vector<uint32_t> :: iterator it;
+	for (it = table.begin(); it != table.end(); ++it)
+	 if (*it == ea) return (it - table.begin());
+	return -1;
+}
+
+/*
+void GraphBuilder ::
+table_insert(uint32_t ea, int port){
+	if (port < 0) return ;
+	if (port > table.size())
+		table.resize(port + 1);
+	Vector<uint32_t> :: iterator it;
+	for (it = table.begin(); it != table.end(); ++it)
+	 if (*it == ea){
+		(*it) = ~0u;
+		break; 
+	 }
+	table[port] = ea;
+}
+
+void GraphBuilder ::
+table_delete(uint32_t ea){
+	HashTable<uint32_t, int> :: iterator it;
+	it = table.find(ea);
+	if (it == table.end())
+		return ;
+	table.erase(it);
+}
+
+void GraphBuilder :: 
+*/
+
+
+
 
 CLICK_ENDDECLS
 EXPORT_ELEMENT(GraphBuilder)
