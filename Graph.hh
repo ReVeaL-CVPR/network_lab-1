@@ -1,7 +1,13 @@
+#ifndef CLICK_GRAPH_HH
+#define CLICK_GRAPH_HH
 
-
+#include <click/pair.hh>
+#include <click/list.hh>
+#include <click/hashtable.hh>
 
 struct Edge;
+struct Edge_transfer;
+class Graph;
 
 struct Edge{
 public:
@@ -22,9 +28,6 @@ struct Edge_transfer{
 	uint32_t seq;
 	bool valid;
 };
-
-
-class Graph;
 
 class Graph{
 public:
@@ -77,4 +80,4 @@ private:
 	int table_lookup(uint32_t) const;
 	int table_rev_lookup(uint32_t) const;
 };
-
+#endif

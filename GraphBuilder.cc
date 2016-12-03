@@ -1,5 +1,17 @@
 #include "GraphBuilder.hh"
 
+#include <click/config.h>
+#include <clicknet/ether.h>
+#include <click/etheraddress.hh>
+#include <click/ipaddress.hh>
+#include <click/args.hh>
+#include <click/bitvector.hh>
+#include <click/straccum.hh>
+#include <click/router.hh>
+#include <click/error.hh>
+#include <click/glue.hh>
+
+CLICK_DECLS
 
 GraphBuilder ::
 GraphBuilder(){
@@ -135,3 +147,5 @@ void GraphBuilder :: push(int srcprt, Packet *p){
 		packet->kill();
 	}
 }
+CLICK_ENDDECLS
+EXPORT_ELEMENT(GraphBuilder)
