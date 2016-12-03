@@ -6,13 +6,24 @@
 
 CLICK_DECLS
 
-GraphBuilder ::
-GraphBuilder(){
+GraphBuilder::GraphBuilder(): _timer_period(this), _timer_delay(this){
+	answers.clear();
+	neighbor.clear();
 }
 
 GraphBuilder ::
 ~GraphBuilder(){
 }
+
+int GraphBuilder::initialize(ErrorHandler *errh){
+    _timer_period.initialize(this);
+    _timer_delay.initialize(this);
+    _timer_period.schedule_after_sec(_time_out);
+    _timer_delay.schedule_after_sec(_delay);
+    graph = new Graph(_ip_address);
+    return 0;
+}
+
 
 int GraphBuilder :: 
 configure(Vector<String> &conf, ErrorHandler *errh) {
@@ -45,7 +56,7 @@ _wrapper(const char* payload, int type, int sequence, int source, int destinatio
 
 void GraphBuilder::broadcast(WritablePacket *p){
 	//TODO traverse all the port and send the packet
-	
+	click_chatter("broadcast");
 	int n = noutputs();
 	int sent = 0;
 	for (int i = 0; i < n; i++){
@@ -66,21 +77,23 @@ void GraphBuilder::forward(int src, Packet *p){
      }
 } 
 
-void GraphBuilder::detect(Timer* timer){
+void GraphBuilder::run_timer(Timer* timer){
 	if(timer == &_timer_period){
 		click_chatter("Sending hello");
 //		answers = new Vector<uint32_t>();
 		answers.clear();
 		WritablePacket *packet = _wrapper("hello", HELLO, 0, _ip_address, 0, 6);
 		broadcast(packet);
+		_timer_delay.schedule_after_sec(_delay);
 		_timer_period.schedule_after_sec(_time_out);
 	}
-	else if (timer == &_timer_delay){
+	else if (timer == &_timer_delay)
+	{
+		click_chatter("Collect acks");
 		bool isnew = 0;
 		Vector<uint32_t> :: iterator it;
 		Vector<uint32_t> :: iterator jt;
 		for(it = answers.begin(); it != answers.end(); ++it){
-			//TODO construct the new neighbor info
 			bool f = 0;
 			for (jt = neighbor.begin(); jt != neighbor.end(); ++jt){
 				if (*it == *jt){
@@ -89,13 +102,12 @@ void GraphBuilder::detect(Timer* timer){
 				}
 			}
 			if (f == 0){
+				click_chatter("add edge %u", _ip_address);
 				graph -> try_add_edge(_ip_address, *it);
 				isnew = 1;
 			}
 		}
-		
 		for(it = neighbor.begin(); it != neighbor.end(); ++it){
-			//TODO construct the new neighbor info
 			bool f = 0;
 			for (jt = answers.begin(); jt != answers.end(); ++jt){
 				if (*it == *jt){
@@ -104,11 +116,11 @@ void GraphBuilder::detect(Timer* timer){
 				}
 			}
 			if (f == 0){
+				click_chatter("delete edge %u", _ip_address);
 				graph -> try_delete_edge(_ip_address, *it);
 				isnew = 1;
 			}
 		}
-		
 		if(isnew){
 			neighbor = answers;
 			graph -> solve();
@@ -117,6 +129,8 @@ void GraphBuilder::detect(Timer* timer){
 			broadcast(packet);
 			delete [](payload.first);
 		}
+	} else {
+    	assert(false);
 	}
 }
 
@@ -130,9 +144,11 @@ void GraphBuilder :: push(int srcprt, Packet *p){
 		output(srcprt).push(packet);
 	} 
 	else if(header->type == ACK) {
-		click_chatter("ACK received.\n");
 		uint32_t from = header->source;
+		click_chatter("ACK received. %u source\n", from);
 		answers.push_back(from);
+		click_chatter("roger.\n");
+		p -> kill();
 	} 
 	else if(header->type == UPDATE) {
 		click_chatter("UPDATE received.\n");
@@ -148,7 +164,8 @@ void GraphBuilder :: push(int srcprt, Packet *p){
 			++ header -> sequence;
 			forward(srcprt, p);
 		}
-		
+		else
+			p -> kill();		
 	}
 	else {
 		click_chatter("Wrong packet type");
