@@ -9,8 +9,7 @@ typedef enum {
     ACK,
     UPDATE,
     TCP_HELLO,
-    TCP_ACK,
-    TCP_DATA
+    TCP_ACK
 } packet_types;
 
 struct PacketHeader{

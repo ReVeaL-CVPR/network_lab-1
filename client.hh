@@ -11,19 +11,19 @@ class BasicClient : public Element {
         BasicClient();
         ~BasicClient();
         const char *class_name() const { return "BasicClient";}
-        const char *port_count() const { return "2/1";}
+        const char *port_count() const { return "1/1";}
         const char *processing() const { return PUSH; }
         int configure(Vector<String> &conf, ErrorHandler *errh);
         
         void run_timer(Timer*);
         void push(int port, Packet *packet);
         int initialize(ErrorHandler*);
+        // static int send(const String &conf, Element *e, void *, ErrorHandler * errh);
+        // void add_handlers();
         
     private: 
         Timer _timerTO;
         uint32_t _seq;
-        uint32_t _delay;
-        uint32_t _period;
         uint32_t _time_out;
         uint32_t _my_address;
         uint32_t _other_address;

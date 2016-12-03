@@ -56,7 +56,6 @@ _wrapper(const char* payload, int type, int sequence, int source, int destinatio
 
 void GraphBuilder::broadcast(WritablePacket *p){
 	//TODO traverse all the port and send the packet
-	click_chatter("broadcast");
 	int n = noutputs();
 	int sent = 0;
 	for (int i = 0; i < n; i++){
@@ -79,7 +78,6 @@ void GraphBuilder::forward(int src, Packet *p){
 
 void GraphBuilder::run_timer(Timer* timer){
 	if(timer == &_timer_period){
-		click_chatter("Sending hello");
 //		answers = new Vector<uint32_t>();
 		answers.clear();
 		ans_port.clear();
@@ -90,14 +88,16 @@ void GraphBuilder::run_timer(Timer* timer){
 	}
 	else if (timer == &_timer_delay)
 	{
-		click_chatter("Collect acks");
 		bool isnew = 0;
 		Vector<uint32_t> :: iterator it;
 		Vector<uint32_t> :: iterator jt;
 		Vector<int> :: iterator kt;
 		port_table.clear();
 		for (it = answers.begin(), kt = ans_port.begin(); it != answers.end(); ++it, ++kt){
+			if (*kt >= port_table.size())
+				port_table.resize(*kt + 1);
 			port_table[*kt] = *it;
+			click_chatter("ip %u vs port %d", *it, *kt);
 		}
 		for(it = answers.begin(); it != answers.end(); ++it){
 			bool f = 0;
@@ -145,7 +145,7 @@ void GraphBuilder :: push(int srcprt, Packet *p){
 	assert(p);
 	struct PacketHeader *header = (struct PacketHeader *)p->data();
 	if (header->type == DATA){
-		uint32_t dstip = graph -> get_next_hop(header -> destnation);
+		uint32_t dstip = graph -> get_next_hop(header -> destination);
 		if (dstip != 0){
 			int dstprt = table_lookup(dstip);
 			if (dstprt >= 0)
@@ -153,20 +153,17 @@ void GraphBuilder :: push(int srcprt, Packet *p){
 			else
 				p -> kill();
 		} else
-			p -> kill;
+			p -> kill();
 	}
 	else if (header->type == HELLO){
-		click_chatter("HELLO received.\n");
 		WritablePacket *packet = _wrapper("", ACK, 0, _ip_address, header->source, 1);
 		p -> kill();
 		output(srcprt).push(packet);
 	} 
 	else if(header->type == ACK) {
 		uint32_t from = header->source;
-		click_chatter("ACK received. %u source\n", from);
 		answers.push_back(from);
 		ans_port.push_back(srcprt);
-		click_chatter("roger.\n");
 		p -> kill();
 	} 
 	else if(header->type == UPDATE) {
@@ -194,9 +191,9 @@ void GraphBuilder :: push(int srcprt, Packet *p){
 
 int GraphBuilder ::
 table_lookup(uint32_t ea) const{
-	Vector<uint32_t> :: iterator it;
-	for (it = table.begin(); it != table.end(); ++it)
-	 if (*it == ea) return (it - table.begin());
+	Vector<uint32_t> :: const_iterator it;
+	for (it = port_table.begin(); it != port_table.end(); ++it)
+	 if (*it == ea) return (it - port_table.begin());
 	return -1;
 }
 

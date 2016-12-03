@@ -27,8 +27,9 @@ public:
 	void forward(int, Packet *);
 	void run_timer(Timer*);
 	int initialize(ErrorHandler*);
-	WritablePacket *_wrapper(const char *, int, int, int, int, int);
+	static WritablePacket *_wrapper(const char *, int, int, int, int, int);
 	//Detect adjacent routers periodically
+	
 
 	void push(int, Packet *);
 
