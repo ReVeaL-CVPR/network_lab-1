@@ -102,14 +102,21 @@ void GraphBuilder::detect(Timer* timer){
 }
 
 
-void push(int srcprt, Packet *p){
+void GraphBuilder :: push(int srcprt, Packet *p){
 	assert(packet);
 	struct PacketHeader *header = (struct PacketHeader *)packet->data();
-	if(header->type == ACK) {
+	if (header->type == HELLO){
+		click_chatter("HELLO received.\n");
+		WritablePacket *packet = wrapper("", ACK, 0, _ip_address, header->source, 1);
+		output(srcprt).push(packet);
+	} 
+	else if(header->type == ACK) {
+		click_chatter("ACK received.\n");
 		uint32_t from = header->source;
 		answers.add(from);
 	} 
 	else if(header->type == UPDATE) {
+		click_chatter("UPDATE received.\n");
 		bool isnew = 0;
 		Edge_transfer *q = (Edge_transfer *)((char *)header + sizeof(struct PacketHeader));
 		uint32_t cnt = header -> size / sizeof(Edge_transfer);
@@ -122,7 +129,7 @@ void push(int srcprt, Packet *p){
 			forward(srcprt, p);
 		}
 		
-	} 
+	}
 	else {
 		click_chatter("Wrong packet type");
 		packet->kill();

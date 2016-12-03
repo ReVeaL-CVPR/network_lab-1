@@ -1,3 +1,6 @@
+
+
+
 struct Edge;
 
 struct Edge{
@@ -37,15 +40,15 @@ public:
 	
 	Pair<char *, int> toPayload() const;
 	
-	enum {
-		E_NODE_NOT_EXIST = 1;
-		E_NODE_LIMIT_EXCEEDED;
+	typedef enum {
+		E_NODE_NOT_EXIST = 1,
+		E_NODE_LIMIT_EXCEEDED,
 		
-		E_EDGE_NOT_EXIST;
-		E_EDGE_EXIST;
+		E_EDGE_NOT_EXIST,
+		E_EDGE_EXIST,
 		
-		E_NODE_CANNOT_REACH;
-	};
+		E_NODE_CANNOT_REACH
+	} ErrorCode_Type;
 		
 
 private:
