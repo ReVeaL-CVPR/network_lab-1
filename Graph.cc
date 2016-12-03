@@ -1,5 +1,11 @@
+#ifndef CLICK_GRAPH_CC
+#define CLICK_GRAPH_CC
+
+#include <click/config.h>
+
 #include "Graph.hh"
 
+CLICK_DECLS
 
 Graph ::
 Graph(uint32_t this_ea): n(0){
@@ -28,7 +34,7 @@ try_add_edge(uint32_t ea1, uint32_t ea2){
 	
 	bool exist = 0;
 	
-	List<uint32_t> :: iterator it_e;
+	Vector<uint32_t> :: iterator it_e;
 	for (it_e = edge[n1].begin(); it_e != edge[n1].end(); ++it_e)
 	 if (*it_e == n2){
 		exist = 1;
@@ -55,7 +61,7 @@ try_delete_edge(uint32_t ea1, uint32_t ea2){
 	
 	bool exist = 0;
 	
-	List<uint32_t> :: iterator it_e;
+	Vector<uint32_t> :: iterator it_e;
 	for (it_e = edge[n1].begin(); it_e != edge[n2].end(); ++it_e)
 	 if (*it_e == n2){
 		exist = 1;
@@ -153,8 +159,8 @@ try_add_edge(uint32_t ea1, uint32_t ea2, uint32_t seq){
 	
 	bool exist = 0;
 	
-	List<Edge> :: iterator it;
-	List<List<Edge> :: iterator> :: iterator it1;
+	Vector<Edge> :: iterator it;
+	Vector<Vector<Edge> :: iterator> :: iterator it1;
 	for (it1 = edge[n1].begin(); it1 != edge[n1].end(); ++it1)
 	 if ((*it1) -> u == n2 || (*it1) -> v == n2){
 		exist = 1;
@@ -193,8 +199,8 @@ try_add_edge(uint32_t ea1, uint32_t ea2){
 	
 	bool exist = 0;
 	
-	List<Edge> :: iterator it;
-	List<List<Edge> :: iterator> :: iterator it1;
+	Vector<Edge> :: iterator it;
+	Vector<Vector<Edge> :: iterator> :: iterator it1;
 	for (it1 = edge[n1].begin(); it1 != edge[n1].end(); ++it1)
 	 if ((*it1) -> u == n2 || (*it1) -> v == n2){
 		exist = 1;
@@ -226,7 +232,7 @@ try_delete_edge(uint32_t ea1, uint32_t ea2){
 	
 	bool exist = 0;
 	
-	List<List<Edge> :: iterator> :: iterator it;
+	Vector<Vector<Edge> :: iterator> :: iterator it;
 	for (it = edge[n1].begin(); it != edge[n1].end(); ++it)
 	 if (((*it) -> u == n2 || (*it) -> v == n2) && (*it) -> valid){
 		(*it) -> valid = 0;
@@ -253,8 +259,8 @@ check_edge(Edge_transfer *et){
 	
 	int r = 0;
 	
-	List<Edge> :: iterator it;
-	List<List<Edge> :: iterator> :: iterator it1;
+	Vector<Edge> :: iterator it;
+	Vector<Vector<Edge> :: iterator> :: iterator it1;
 
 	for (it1 = edge[u].begin(); it1 != edge[u].end(); ++it1)
 	 if ((*it1) -> v == v || (*it1) -> u == v){
@@ -294,7 +300,7 @@ toPayload(){
 	char *r = new char[s];
 	Edge_transfer *ir = (Edge_transfer *)r;
 	
-	List<Edge> :: iterator it;
+	Vector<Edge> :: iterator it;
 	for (it = edges.begin(); it != edges.end(); ++it, ++ir){
 		ir -> src = table_rev_lookup(it -> u);
 		ir -> dst = table_rev_lookup(it -> v);
@@ -319,7 +325,7 @@ solve(){
 	
 	while (++qh <= qt){
 		uint32_t x = Que[qh], y;
-		for (List<List<Edge> :: iterator> :: iterator it = edge[x].begin(); it != edge[x].end(); ++it)
+		for (Vector<Vector<Edge> :: iterator> :: iterator it = edge[x].begin(); it != edge[x].end(); ++it)
 		 if ((*it) -> valid){
 			y = (*it) -> u + (*it) -> v - x;
 			if (!vis[y]){
@@ -393,3 +399,6 @@ table_rev_lookup(uint32_t label){
 		return it -> key();
 	return -E_NODE_NOT_EXIST;
 }
+
+CLICK_ENDDECLS
+#endif

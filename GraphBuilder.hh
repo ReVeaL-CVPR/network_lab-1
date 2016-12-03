@@ -1,6 +1,7 @@
 #ifndef CLICK_GRAPHBUILDER_HH
 #define CLICK_GRAPHBUILDER_HH
 
+#include <click/packet.hh>
 #include <click/element.hh>
 #include <click/etheraddress.hh>
 #include <click/ipaddress.hh>
@@ -9,8 +10,7 @@
 #include <click/vector.hh>
 
 #include "Graph.hh"
-
-class GraphBuilder;
+#include "PacketHeader.hh"
 
 CLICK_DECLS
 class GraphBuilder: public Element{
@@ -37,7 +37,7 @@ private:
 	uint32_t _ip_address;
 	uint32_t _time_out;
 	uint32_t _delay;
-	Vector<String> answers;
+	Vector<uint32_t> answers;
 
 	Vector<uint32_t> neighbor;
 };

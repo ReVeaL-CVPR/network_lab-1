@@ -1,13 +1,12 @@
 #ifndef CLICK_GRAPH_HH
 #define CLICK_GRAPH_HH
 
+#include <click/config.h>
 #include <click/pair.hh>
-#include <click/list.hh>
+#include <click/vector.hh>
 #include <click/hashtable.hh>
 
-struct Edge;
-struct Edge_transfer;
-class Graph;
+CLICK_DECLS
 
 struct Edge{
 public:
@@ -38,7 +37,7 @@ public:
 	int try_add_edge(uint32_t, uint32_t, uint32_t);
 	int try_delete_edge(uint32_t, uint32_t);
 	int check_edge(Edge_transfer *);
-	uint32_t nexthop(uint32_t) const;
+	uint32_t get_next_hop(uint32_t) const;
 	void solve();
 	
 	Pair<char *, int> toPayload() const;
@@ -58,11 +57,11 @@ private:
 	uint32_t n;
 	static const uint32_t MaxNodeNum = 256;
 /*
-	List<uint32_t> edge[MaxNodeNum];
+	Vector<uint32_t> edge[MaxNodeNum];
 */
 
-	List<Edge> edges;
-	List<List<Edge> :: iterator> edge[MaxNodeNum];
+	Vector<Edge> edges;
+	Vector<Vector<Edge> :: iterator> edge[MaxNodeNum];
 	
 	uint32_t dis[MaxNodeNum];
 	uint32_t nexthop[MaxNodeNum];
@@ -80,4 +79,6 @@ private:
 	int table_lookup(uint32_t) const;
 	int table_rev_lookup(uint32_t) const;
 };
+
+CLICK_ENDDECLS
 #endif

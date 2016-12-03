@@ -1,15 +1,7 @@
-#include "GraphBuilder.hh"
-
 #include <click/config.h>
-#include <clicknet/ether.h>
-#include <click/etheraddress.hh>
-#include <click/ipaddress.hh>
-#include <click/args.hh>
-#include <click/bitvector.hh>
-#include <click/straccum.hh>
-#include <click/router.hh>
-#include <click/error.hh>
-#include <click/glue.hh>
+#include <click/confparse.hh>
+
+#include "GraphBuilder.hh"
 
 CLICK_DECLS
 
@@ -22,11 +14,7 @@ GraphBuilder ::
 }
 
 int GraphBuilder :: 
-configure(Vector<String> &conf, ErrorHandler *errh){
-	
-}
-
-int BasicClient::configure(Vector<String> &conf, ErrorHandler *errh) {
+configure(Vector<String> &conf, ErrorHandler *errh) {
   if (cp_va_kparse(conf, this, errh,
                   "MY_ADDRESS", cpkP+cpkM, cpUnsigned, &_ip_address,
 			      "DELAY", cpkP, cpUnsigned, &_delay,
@@ -63,8 +51,9 @@ void GraphBuilder::forward(int src, Packet *p){
 void GraphBuilder::detect(Timer* timer){
 	if(timer == &_timer_period){
 		click_chatter("Sending hello");
-		answers = new Vector<uint32_t>();
-		WritablePacket *packet = wrapper("hello", HELLO, _ip_address, 0, 6);
+//		answers = new Vector<uint32_t>();
+		answers.clear();
+		WritablePacket *packet = _wrapper("hello", HELLO, 0, _ip_address, 0, 6);
 		broadcast(packet);
 		_timer_period.schedule_after_sec(_time_out);
 	}
@@ -106,7 +95,7 @@ void GraphBuilder::detect(Timer* timer){
 			neighbor = answers;
 			graph -> solve();
 			Pair<char *, int> payload = graph -> toPayload();
-			WritablePacket *packet = wrapper(payload.first, UPDATE, 0, _ip_address, 0, payload.second);
+			WritablePacket *packet = _wrapper(payload.first, UPDATE, 0, _ip_address, 0, payload.second);
 			broadcast(packet);
 			delete [](payload.first);
 		}
@@ -115,17 +104,17 @@ void GraphBuilder::detect(Timer* timer){
 
 
 void GraphBuilder :: push(int srcprt, Packet *p){
-	assert(packet);
-	struct PacketHeader *header = (struct PacketHeader *)packet->data();
+	assert(p);
+	struct PacketHeader *header = (struct PacketHeader *)p->data();
 	if (header->type == HELLO){
 		click_chatter("HELLO received.\n");
-		WritablePacket *packet = wrapper("", ACK, 0, _ip_address, header->source, 1);
+		WritablePacket *packet = _wrapper("", ACK, 0, _ip_address, header->source, 1);
 		output(srcprt).push(packet);
 	} 
 	else if(header->type == ACK) {
 		click_chatter("ACK received.\n");
 		uint32_t from = header->source;
-		answers.add(from);
+		answers.push_back(from);
 	} 
 	else if(header->type == UPDATE) {
 		click_chatter("UPDATE received.\n");
@@ -133,19 +122,21 @@ void GraphBuilder :: push(int srcprt, Packet *p){
 		Edge_transfer *q = (Edge_transfer *)((char *)header + sizeof(struct PacketHeader));
 		uint32_t cnt = header -> size / sizeof(Edge_transfer);
 		for (int i = 0; i < cnt; ++i){
-			if (graph -> check_edge(q[i]) > 0)
+			if (graph -> check_edge(&q[i]) > 0)
 				isnew = 1;
 		}
 		if (isnew){
 			graph -> solve();
+			++ header -> sequence;
 			forward(srcprt, p);
 		}
 		
 	}
 	else {
 		click_chatter("Wrong packet type");
-		packet->kill();
+		p->kill();
 	}
 }
+
 CLICK_ENDDECLS
 EXPORT_ELEMENT(GraphBuilder)
