@@ -25,7 +25,7 @@ int BasicClient::configure(Vector<String> &conf, ErrorHandler *errh) {
   return 0;
 }
 
-void GraphBuilder::broadcast(WritablePacket *packet){
+void GraphBuilder::broadcast(WritablePacket *p){
 	//TODO traverse all the port and send the packet
 	
 	int n = noutputs();
@@ -37,7 +37,7 @@ void GraphBuilder::broadcast(WritablePacket *packet){
      }
 }
 
-void GraphBuilder::forward(int src, Packet *packet){
+void GraphBuilder::forward(int src, Packet *p){
 	int n = noutputs();
 	int sent = 0;
 	for (int i = 0; i < n; i++)
@@ -91,10 +91,12 @@ void GraphBuilder::detect(Timer* timer){
 		}
 		
 		if(isnew){
+			neighbor = answers;
 			graph -> solve();
 			Pair<char *, int> payload = graph -> toPayload();
 			WritablePacket *packet = wrapper(payload.first, UPDATE, 0, _ip_address, 0, payload.second);
 			broadcast(packet);
+			delete [](payload.first);
 		}
 	}
 }

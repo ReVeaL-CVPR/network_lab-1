@@ -2,12 +2,11 @@
 
 
 Graph ::
-Graph(uint32_t this_ea): n(1){
-	memset(node_exist, 0, MaxNodeNum * sizeof(bool));
+Graph(uint32_t this_ea): n(0){
+	add_node(this_ea);
 	
-	node_exist[0] = 1;
 	dis[0] = 0; nexthop[0] = 0;
-	table.set(this_ea, 0);
+	
 }
 
 Graph ::
@@ -215,7 +214,6 @@ try_add_edge(uint32_t ea1, uint32_t ea2){
 	return 1;
 }
 
-
 int Graph ::
 try_delete_edge(uint32_t ea1, uint32_t ea2){
 	uint32_t n1 = table_lookup(ea1);
@@ -229,9 +227,9 @@ try_delete_edge(uint32_t ea1, uint32_t ea2){
 	bool exist = 0;
 	
 	List<List<Edge> :: iterator> :: iterator it;
-	for (it = edge[n1].begin(); it != edge[n2].end(); ++it)
-	 if (((*it) -> u == n2 || (*it) -> v == u2) && (*it) -> valid){
-		(*it) -> valid = 0; 
+	for (it = edge[n1].begin(); it != edge[n1].end(); ++it)
+	 if (((*it) -> u == n2 || (*it) -> v == n2) && (*it) -> valid){
+		(*it) -> valid = 0;
 		exist = 1;
 		break;
 	 }
@@ -253,23 +251,15 @@ check_edge(Edge_transfer *et){
 	if ((int)v < 0)
 		return -E_NODE_LIMIT_EXCEEDED;
 	
-	int r = 
+	int r = 0;
 	
 	List<Edge> :: iterator it;
 	List<List<Edge> :: iterator> :: iterator it1;
-/*
-	for (it = edges.begin(); it != edges.end(); ++it)
-	 if ((it -> u == u && it -> v == v) || (it -> u == v && it -> v == u)){
-		 if (it -> seq > et -> seq) break;
-		 if (it -> valid == et -> valid) break;
-		 
-		
-	 }
-*/
+
 	for (it1 = edge[u].begin(); it1 != edge[u].end(); ++it1)
 	 if ((*it1) -> v == v || (*it1) -> u == v){
 		 it = *it1;
-		 if (it -> seq > et -> seq) break;
+		 if (it -> seq >= et -> seq) break;
 		 if (it -> valid == et -> valid) break;
 		 r = 1;
 		 it -> seq = et -> seq;
@@ -292,6 +282,8 @@ get_next_hop(uint32_t ea){
 	uint32_t n0 = table_lookup(ea);
 	if ((int)n0 < 0)
 		return -E_NODE_NOT_EXIST;
+	if (dis[n0] == ~0u >> 1)
+		return -E_NODE_CANNOT_REACH;
 	n0 = nexthop[n0];
 	return table_rev_lookup(n0);
 }
@@ -341,6 +333,11 @@ solve(){
 	for (uint32_t i = 0; i < n; ++i)
 	 if (node_exist[i] && !vis[i]) delete_node(i);
 */
+	for (uint32_t i = 0; i < n; ++i)
+	 if (!vis[i]){
+		 dis[i] = ~0u >> 1;
+		 nexthop[i] = 0;
+	 }
 }
 
 int Graph ::
@@ -348,15 +345,7 @@ add_node(uint32_t ea){
 	if (n == MaxNodeNum)
 		return -E_NODE_LIMIT_EXCEEDED;
 	
-	uint32_t new_label = n;
-	for (int i = 0; i < n; ++i)
-	 if (!node_exist[i]){
-		 new_label = i;
-		 break;
-	 }
-	n += new_label == n;
-	
-	table_add(ea, new_label);
+	table_add(ea, n++);
 }
 
 /*
@@ -396,11 +385,11 @@ table_lookup(uint32_t ea){
 	return it -> label;
 }
 
-void Graph ::
+int Graph ::
 table_rev_lookup(uint32_t label){
 	HashTable<uint32_t, uint32_t> :: iterator it;
 	for (it = table.begin(); it != table.end(); ++it)
 	 if (it -> value() == label)
 		return it -> key();
-	return uint32_t();
+	return -E_NODE_NOT_EXIST;
 }

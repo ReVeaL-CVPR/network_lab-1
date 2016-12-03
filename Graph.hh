@@ -43,6 +43,8 @@ public:
 		
 		E_EDGE_NOT_EXIST;
 		E_EDGE_EXIST;
+		
+		E_NODE_CANNOT_REACH;
 	};
 		
 
@@ -69,7 +71,7 @@ private:
 	
 	void table_add(uint32_t, uint32_t);
 //	void table_delete(uint32_t);
-	uint32_t table_lookup(uint32_t) const;
-	uint32_t table_rev_lookup(uint32_t) const;
+	int table_lookup(uint32_t) const;
+	int table_rev_lookup(uint32_t) const;
 };
 
