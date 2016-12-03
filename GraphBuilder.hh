@@ -19,13 +19,14 @@ public:
 	~GraphBuilder();
 
 	const char *class_name() const { return "GraphBuilder"; }
-	const char *port_count() const { "1-/1-"; }
+	const char *port_count() const { return "1-/1-"; }
 	const char *processing() const { return PUSH; }
 
 	int configure(Vector<String> &, ErrorHandler *);
 	void broadcast(WritablePacket *);
 	void forward(int, Packet *);
 	void detect(Timer*);
+	WritablePacket *_wrapper(const char *, int, int, int, int, int);
 	//Detect adjacent routers periodically
 
 	void push(int, Packet *);

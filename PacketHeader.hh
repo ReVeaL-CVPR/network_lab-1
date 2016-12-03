@@ -18,6 +18,4 @@ struct PacketHeader{
      uint32_t size;
 };
 
-WritablePacket *_wrapper(const char* payload, int type, int sequence, int source, int destination, int size);
-
 #endif

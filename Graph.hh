@@ -2,6 +2,7 @@
 #define CLICK_GRAPH_HH
 
 #include <click/config.h>
+#include <click/element.hh>
 #include <click/pair.hh>
 #include <click/vector.hh>
 #include <click/hashtable.hh>
@@ -14,12 +15,19 @@ public:
 	uint32_t seq;
 	bool valid;
 	
+	Edge(const Edge &that): u(that.u), v(that.v), seq(that.seq), valid(that.valid){
+	}
+	Edge &operator =(const Edge &that){
+		u = that.u; v = that.v;
+		seq = that.seq;
+		valid = that.valid;
+		return *this;
+	}
 	Edge(uint32_t _u, uint32_t _v, uint32_t _seq, bool _valid = 1): u(_u), v(_v), seq(_seq), valid(_valid){
 	}
 private:
 	Edge();
-	Edge(Edge &);
-	Edge &operator =(const Edge &);
+
 };
 
 struct Edge_transfer{
@@ -28,10 +36,17 @@ struct Edge_transfer{
 	bool valid;
 };
 
-class Graph{
+class Graph: public Element{
 public:
+	Graph();
 	Graph(uint32_t);
 	~Graph();
+	
+	const char *class_name() const { return "Graph"; };
+	const char *port_count() const { return "1-/1-"; };
+	const char *processing() const { return PUSH; };
+	
+	//int configure(Vector<String> &, ErrorHandler *);
 	
 	int try_add_edge(uint32_t, uint32_t);
 	int try_add_edge(uint32_t, uint32_t, uint32_t);
@@ -67,7 +82,6 @@ private:
 	uint32_t nexthop[MaxNodeNum];
 	HashTable<uint32_t, uint32_t> table;
 	
-	Graph();
 	Graph(const Graph &);
 	Graph &operator =(const Graph &);
 	

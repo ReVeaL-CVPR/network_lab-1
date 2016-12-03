@@ -1,11 +1,12 @@
-#ifndef CLICK_GRAPH_CC
-#define CLICK_GRAPH_CC
-
 #include <click/config.h>
 
 #include "Graph.hh"
 
 CLICK_DECLS
+
+Graph ::
+Graph(){
+}
 
 Graph ::
 Graph(uint32_t this_ea): n(0){
@@ -177,7 +178,8 @@ try_add_edge(uint32_t ea1, uint32_t ea2, uint32_t seq){
 			return -E_EDGE_EXIST;
 		}
 	} else {
-		it = edges.push_back(Edge(n1, n2, seq));
+		edges.push_back(Edge(n1, n2, seq));
+		it = edges.end(); --it;
 		edge[n1].push_back(it);
 		edge[n2].push_back(it);
 	}
@@ -212,13 +214,15 @@ try_add_edge(uint32_t ea1, uint32_t ea2){
 		it -> valid = 1;
 		++it -> seq;
 	} else {
-		it = edges.push_back(Edge(n1, n2, seq));
+		edges.push_back(Edge(n1, n2, 0));
+		it = edges.end(); --it;
 		edge[n1].push_back(it);
 		edge[n2].push_back(it);
 	}
 	
 	return 1;
 }
+
 
 int Graph ::
 try_delete_edge(uint32_t ea1, uint32_t ea2){
@@ -275,7 +279,8 @@ check_edge(Edge_transfer *et){
 	
 	if (it1 == edge[u].end()){
 		r = 1;
-		it = edges.push_back(Edge(u, v, et -> seq, et -> valid));
+		edges.push_back(Edge(u, v, et -> seq, et -> valid));
+		it = edges.end(); --it;
 		edge[u].push_back(it);
 		edge[v].push_back(it);
 	}
@@ -284,7 +289,7 @@ check_edge(Edge_transfer *et){
 }	
 
 uint32_t Graph ::
-get_next_hop(uint32_t ea){
+get_next_hop(uint32_t ea) const{
 	uint32_t n0 = table_lookup(ea);
 	if ((int)n0 < 0)
 		return -E_NODE_NOT_EXIST;
@@ -295,12 +300,12 @@ get_next_hop(uint32_t ea){
 }
 
 Pair<char *, int> Graph ::
-toPayload(){
+toPayload() const{
 	int s = edges.size() * sizeof(Edge_transfer);
 	char *r = new char[s];
 	Edge_transfer *ir = (Edge_transfer *)r;
 	
-	Vector<Edge> :: iterator it;
+	Vector<Edge> :: const_iterator it;
 	for (it = edges.begin(); it != edges.end(); ++it, ++ir){
 		ir -> src = table_rev_lookup(it -> u);
 		ir -> dst = table_rev_lookup(it -> v);
@@ -383,22 +388,22 @@ table_delete(uint32_t label){
 } 
 */
 int Graph ::
-table_lookup(uint32_t ea){
-	HashTable<uint32_t, uint32_t> :: iterator it;
+table_lookup(uint32_t ea) const{
+	HashTable<uint32_t, uint32_t> :: const_iterator it;
 	it = table.find(ea);
 	if (it == table.end())
 		return -E_NODE_NOT_EXIST;
-	return it -> label;
+	return it.value();
 }
 
 int Graph ::
-table_rev_lookup(uint32_t label){
-	HashTable<uint32_t, uint32_t> :: iterator it;
+table_rev_lookup(uint32_t label) const{
+	HashTable<uint32_t, uint32_t> :: const_iterator it;
 	for (it = table.begin(); it != table.end(); ++it)
-	 if (it -> value() == label)
-		return it -> key();
+	 if (it.value() == label)
+		return it.key();
 	return -E_NODE_NOT_EXIST;
 }
 
 CLICK_ENDDECLS
-#endif
+EXPORT_ELEMENT(Graph);
