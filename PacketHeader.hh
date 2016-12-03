@@ -7,7 +7,10 @@ typedef enum {
     DATA = 0,
     HELLO,
     ACK,
-    UPDATE
+    UPDATE,
+    TCP_HELLO,
+    TCP_ACK,
+    TCP_DATA
 } packet_types;
 
 struct PacketHeader{
